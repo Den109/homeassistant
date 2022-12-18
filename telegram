@@ -1,0 +1,150 @@
+telegram_control:
+  automation:
+  - alias: telegram_keyboard
+    id: показать клавиатуру в тг
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_command
+      event_data:
+        command: /start
+    action:
+    - service: notify.denis_telegram
+      data:
+        message: "МЕНЮ"
+        data:
+          keyboard: 
+          - '/start'
+          - 'Кто я, Воздух, Погода'
+          - 'Калитка, Отчет, Cвет'
+          
+
+  
+  - alias: telegram_id
+    id: Определение ID
+    initial_state: true
+    trigger:
+      - platform: event
+        event_type: telegram_text
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.event.data.text in ["ктоя", "кто я", "Кто я", "who am i", "Who am i", "whoami", "Whoami"] }}
+    action:
+      - service: notify.denis_telegram
+        data:
+          message: Ты Админ
+
+  - alias: toggl_rele1_tg
+    id: переключение реле тг
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_text
+    condition:
+    - condition: template
+      value_template: >-
+        {{trigger.event.data.text in ["Калитка"]}}
+    action:
+    - service: switch.toggle
+      entity_id: switch.0xa4c138d3bb1a0568_l1
+        
+
+  - alias: send_to_report_command
+    id: ответ на запрос состояния
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_command
+      event_data:
+        command: /report
+    action:
+    - service: script.turn_on
+      entity_id: script.sensor_available_telegram
+        
+
+  - alias: tg_report
+    id: репорт в тг
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_text
+    condition:
+    - condition: template
+      value_template: >-
+        {{trigger.event.data.text in ["Отчет"]}}
+    action:
+    - service: script.turn_on
+      entity_id: script.sensor_available_telegram
+
+  - alias: toggle_light_by_tg
+    id: переключает виртуальную лампу через тг
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_text
+    condition:
+    - condition: template
+      value_template: >-
+        {{trigger.event.data.text in ["Cвет"]}}
+    action:
+    - service: light.toggle
+      entity_id: light.lr_light
+
+  - alias: ait_tashkent
+    id: воздух в ташкенте
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_text
+    condition:
+    - condition: template
+      value_template: >-
+        {{trigger.event.data.text in ["Воздух"]}}
+    action:
+    - service: script.turn_on
+      entity_id: script.air_quality_tashkent_telegram
+
+  - alias: weather_tashkent
+    id: погода в ташкенте
+    initial_state: true
+    trigger:
+    - platform: event
+      event_type: telegram_text
+    condition:
+    - condition: template
+      value_template: >-
+        {{trigger.event.data.text in ["Погода"]}}
+    action:
+    - service: script.turn_on
+      entity_id: script.weather_kokand_telegram
+    
+
+
+  script:
+    sensor_available_telegram:
+      sequence:
+        - service: notify.denis_telegram
+          data:
+            message: "{{states('sensor.availabe_state')}}"
+
+    air_quality_tashkent_telegram:
+      sequence:
+        - service: notify.denis_telegram
+          data: 
+            title: Качество воздуха в Ташкенте
+            message: |
+                {{"\U000023F0"}} Дата - {{states('sensor.date_time')}}
+                {{"\U00002139"}} Индекс качества воздуха - {{states('sensor.u_s_air_quality_index')}}
+                {{"\U00002B06"}} Превышен - {{states('sensor.u_s_main_pollutant')}}
+    
+    weather_kokand_telegram:
+      sequence:
+        - service: notify.denis_telegram
+          data: 
+            title: Погода коканд
+            message: |
+              {{"\U0001F321"}} Температура - {{states('sensor.temperature_kok_round')}}
+              {{"\U0001F32C"}} Ветер - {{states('sensor.openweathermap_wind_speed_2')}}
+              {{"\U0001F4A7"}} Влажность - {{states('sensor.openweathermap_humidity')}}
+              {{"\U00002B07"}} Давление - {{states('sensor.pressure_sensor_kokand')}}
