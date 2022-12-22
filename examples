@@ -1,0 +1,32 @@
+tts:
+  automation:
+    - id: tts_weather_tashkent
+      alias: погода в ташкенте
+      initial_state: true 
+      trigger:
+        - platform: state
+          entity_id: sensor.0x54ef44100042ab45_action
+          to: button_3_single
+      action:
+        service: tts.google_translate_say
+        data:
+          entity_id: media_player.mpd
+          message: >-
+            Привет. вотафак мазафака!!! Cейчас в Ташкенте 
+              {{states('sensor.temperature_kok_round')}}
+              Скорость ветра {{states('sensor.openweathermap_wind_speed_2')|round()}} метра в секунду
+              Влажность {{states('sensor.openweathermap_humidity')}} процентов
+              Давление {{states('sensor.pressure_sensor_kokand')}}
+              
+    - id: restart_z2m
+      alias: restart_z2m
+      trigger:
+      - platform: state
+        entity_id:
+        - sensor.0x54ef44100042ab45_action
+        to: button_1_single
+      action:
+      - service: hassio.addon_restart
+        data:
+          addon: 45df7312_zigbee2mqtt
+      mode: single
