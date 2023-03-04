@@ -12,7 +12,7 @@ tts:
         data:
           entity_id: media_player.mpd
           message: >-
-            Привет. вотафак мазафака!!! Cейчас в Ташкенте 
+            Привет!!! Cейчас в Ташкенте 
               {{states('sensor.temperature_kok_round')}}
               Скорость ветра {{states('sensor.openweathermap_wind_speed_2')|round()}} метра в секунду
               Влажность {{states('sensor.openweathermap_humidity')}} процентов
